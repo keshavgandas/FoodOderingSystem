@@ -129,9 +129,10 @@ Visit: `http://localhost:<port>/`
 
 ## 👨‍💻 Author
 
-* **Name:** Gourav Rathi
-* **Email:** [rathi.java@rathitech.com](mailto:rathi.java@rathitech.com)
-* **GitHub:** [rathi-java](https://github.com/rathi-java)
+* **Name:** Keshav Gandas
+* **Email:** keshavgandas1@gmail.com
+* **GitHub:** [keshavgandas](https://github.com/keshavgandas)
+
 
 ---
 
