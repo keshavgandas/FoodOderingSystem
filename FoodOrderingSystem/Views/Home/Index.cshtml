@@ -1,0 +1,128 @@
+﻿@model IEnumerable<FoodOrderApp.Models.FoodItem>
+
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="p-0 mb-4 text-white rounded shadow-lg" style="background: linear-gradient(135deg, #ff914d, #ff4e50); margin-top: -20px;">
+    <div class="container text-center py-2">
+        <h1 class="display-3 fw-bold mb-3" style="letter-spacing: 1px;">
+            Hungry? <span style="color: #fff700;">Let’s Fix That!</span> 🍕
+        </h1>
+        <p class="fs-5 mb-4" style="max-width: 700px; margin: 0 auto; line-height: 1.7;">
+            Discover irresistible meals, crafted with love and delivered fresh to your doorstep.
+            Whether you're craving spicy, cheesy, crispy, or sweet – we’ve got it all.
+        </p>
+        <a href="/Food/List" class="btn btn-lg px-5 py-3 fw-bold shadow" style="background: linear-gradient(90deg, #fff700, #ff914d); border: none; color: black; border-radius: 40px;">
+            🍔 Let’s Feast – Explore the Menu
+        </a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow">
+                    <img src="@item.ImagePath" class="card-img-top" alt="@item.Name" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">@item.Name</h5>
+                        <p class="card-subtitle mb-1 text-success">In Stock: @item.Stock</p>
+                        <p class="card-text text-muted">@item.Ingredients</p>
+                        <p class="card-text fs-5 fw-semibold">@item.DiscountedPrice.ToString("F2")</p>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-primary btn-sm" onclick="addToCart(@item.Id)">Add to cart</button>
+                            <button class="btn btn-warning btn-sm">Buy now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+<!-- Floating Cart Button -->
+<button class="btn btn-warning position-fixed rounded-circle shadow" style="bottom: 20px; right: 20px; z-index: 1050; width: 60px; height: 60px;" onclick="loadCartModal()" data-bs-toggle="modal" data-bs-target="#cartModal">
+    <i class="bi bi-cart-plus fs-4 text-black"></i>
+</button>
+
+<!-- Cart Modal -->
+<div class="modal fade" id="cartModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" id="cartModalContent">
+            <!-- Cart contents loaded via AJAX -->
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function addToCart(foodItemId) {
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ foodItemId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                showToast(data.message || "Item added to cart!", data.success ? "success" : "danger");
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("❌ Network error", "danger");
+            });
+        }
+
+        function loadCartModal() {
+            fetch('/Cart/ViewCart')
+                .then(response => response.text())
+                .then(html => {
+                    document.querySelector('#cartModal .modal-content').innerHTML = html;
+                });
+        }
+
+        function updateQuantity(id, quantity) {
+            fetch(`/Cart/UpdateQuantity?id=${id}&quantity=${quantity}`, { method: 'POST' })
+                .then(res => {
+                    if (!res.ok) throw new Error("Update failed");
+                    return res.text();
+                })
+                .then(() => loadCartModal())
+                .catch(err => {
+                    console.error("Error updating quantity:", err);
+                    alert("❌ Error updating quantity");
+                });
+        }
+
+        function removeItem(id) {
+            fetch(`/Cart/RemoveItem?id=${id}`, { method: 'POST' })
+                .then(res => {
+                    if (!res.ok) throw new Error("Delete failed");
+                    return res.text();
+                })
+                .then(() => loadCartModal())
+                .catch(err => {
+                    console.error("Error removing item:", err);
+                    alert("❌ Error removing item");
+                });
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0 position-fixed bottom-0 end-0 m-3`;
+            toast.style.zIndex = 9999;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            setTimeout(() => toast.remove(), 4000);
+        }
+    </script>
+}
+

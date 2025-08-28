@@ -1,0 +1,151 @@
+﻿<!-- Auth Modal -->
+<div class="modal fade" id="authModal" tabindex="-1" aria-labelledby="authModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header">
+                <h5 class="modal-title" id="authModalLabel">Login</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Login Form (Default Visible) -->
+                <form id="loginForm">
+                    <div id="alertPlaceholder"></div>
+                    <div class="mb-3">
+                        <label for="loginUser" class="form-label">Email or Username</label>
+                        <input type="text" class="form-control" id="loginUser" placeholder="Enter email or username" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" placeholder="Enter your password" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                    <div class="mt-3 text-center">
+                        <small>
+                            Don’t have an account?
+                            <a href="javascript:void(0)" class="text-decoration-none" onclick="toggleAuthForm('signup')">Sign up here</a>
+                        </small>
+
+                    </div>
+                </form>
+
+                <!-- Sign Up Form (Hidden by default) -->
+                <form id="signupForm" class="d-none">
+                    <div id="alertPlaceholder"></div>
+                    <div class="mb-3">
+                        <label for="signupUsername" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="signupUsername" placeholder="Choose a username" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="signupEmail" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="signupEmail" placeholder="Enter your email" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="signupPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="signupPassword" placeholder="Choose a password" required />
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Sign Up</button>
+                    <div class="mt-3 text-center">
+                        <small>
+                            Already have an account?
+                            <a href="javascript:void(0)" class="text-decoration-none" onclick="toggleAuthForm('login')">Login here</a>
+                        </small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAuthForm(formType) {
+        const loginForm = document.getElementById('loginForm');
+        const signupForm = document.getElementById('signupForm');
+        const modalTitle = document.getElementById('authModalLabel');
+
+        if (formType === 'signup') {
+            loginForm.classList.add('d-none');
+            signupForm.classList.remove('d-none');
+            modalTitle.textContent = 'Sign Up';
+        } else {
+            signupForm.classList.add('d-none');
+            loginForm.classList.remove('d-none');
+            modalTitle.textContent = 'Login';
+        }
+    }
+
+    // ⬇️ Handle signup AJAX
+    document.getElementById('signupForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const username = document.getElementById('signupUsername').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const password = document.getElementById('signupPassword').value.trim();
+
+        fetch('/Auth/Register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, email, password })
+        })
+        .then(response => {
+            if (response.ok) return response.text();
+            if (response.status === 409) throw new Error('Username or Email already exists!');
+            throw new Error('Registration failed. Please try again.');
+        })
+        .then(msg => {
+            showAlert('success', msg || 'Registration successful!');
+            document.getElementById('signupForm').reset();
+        })
+        .catch(err => {
+            showAlert('danger', err.message);
+        });
+    });
+
+    // ⬇️ Bootstrap Alert Box Function
+    function showAlert(type, message) {
+        const alertPlaceholder = document.getElementById('alertPlaceholder');
+        alertPlaceholder.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show mt-3" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
+
+    // ⬇️ Handle login AJAX
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const userInput = document.getElementById('loginUser').value.trim();
+        const password = document.getElementById('loginPassword').value.trim();
+
+        fetch('/Auth/Login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ userInput, password })  // Send either email or username
+        })
+        .then(response => {
+            if (response.ok) return response.text();
+            if (response.status === 401) throw new Error('Invalid credentials');
+            throw new Error('Login failed. Please try again.');
+        })
+        .then(msg => {
+            showAlert('success', msg || 'Login successful! ✅');
+            document.getElementById('loginForm').reset();
+
+            // Optional: Redirect or reload
+            setTimeout(() => window.location.reload(), 1500);
+        })
+        .catch(err => {
+            showAlert('danger', err.message);
+        });
+    });
+
+</script>
+
+
+}

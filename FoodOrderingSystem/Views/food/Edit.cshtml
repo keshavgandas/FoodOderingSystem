@@ -1,0 +1,84 @@
+﻿@model FoodOrderApp.Models.FoodItem
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h2 class="mb-4">Edit Food</h2>
+
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label class="form-label">Food Name</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Ingredients</label>
+        <input asp-for="Ingredients" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Stock</label>
+        <input asp-for="Stock" class="form-control" />
+        <span asp-validation-for="Stock" class="text-danger"></span>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Original Price</label>
+            <input asp-for="OriginalPrice" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Discounted Price</label>
+            <input asp-for="DiscountedPrice" class="form-control" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Rating (1–5)</label>
+        <input asp-for="Rating" type="number" min="1" max="5" class="form-control" />
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Current Image</label>
+            <div class="border p-2 bg-light rounded">
+                <img src="@Model.ImagePath" class="img-fluid rounded" style="max-width: 100%; max-height: 180px;" alt="Current Image" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-bold">Upload New Image</label>
+            <input type="file" name="ImageFile" class="form-control mb-2" onchange="previewNewImage(this)" />
+            <div class="border p-2 bg-light rounded" id="newImageContainer" style="display: none;">
+                <img id="newImagePreview" class="img-fluid rounded" style="max-width: 100%; max-height: 180px;" alt="New Image Preview" />
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+
+@section Scripts {
+    <script>
+        function previewNewImage(input) {
+            const preview = document.getElementById('newImagePreview');
+            const container = document.getElementById('newImageContainer');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    container.style.display = 'block';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}
